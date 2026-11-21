@@ -40,6 +40,12 @@ class MainActivity : Activity() {
         web.setBackgroundColor(0xFF070B10.toInt())
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true          // options are saved in localStorage
+        // Layout is designed for 1240 CSS px (Thor bottom screen). Without this the WebView uses
+        // device-independent px (~470 px wide at Thor's density) and everything is 2.6x too big.
+        web.settings.useWideViewPort = true
+        web.settings.loadWithOverviewMode = true
+        web.settings.textZoom = 100                    // ignore system font scale
+        web.settings.setSupportZoom(false)
         web.settings.mediaPlaybackRequiresUserGesture = true
         web.addJavascriptInterface(Bridge(), "DC2")
         web.webViewClient = object : WebViewClient() {

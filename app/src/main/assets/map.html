@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a121d">
+<title>Dark Chronicle — Карта этажа</title>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark;--accent:#9aab83;--ground:url("img/dng0_ground.png");--frame:url("img/hud-frame.png");--ink:#07101a;--cream:#fff7e6}
+html{width:100%;height:100%;overflow:hidden}
+body{display:grid;grid-template-rows:auto minmax(0,1fr);gap:4px;width:100%;height:100%;margin:0;overflow:hidden;padding:4px;background:radial-gradient(ellipse at 50% 38%,#172b3c 0,#0b1724 63%,#07101a 100%);color:var(--cream);font-family:Verdana,Arial,Roboto,sans-serif;font-weight:700;text-shadow:-2px 0 var(--ink),2px 0 var(--ink),0 -2px var(--ink),0 2px var(--ink),0 4px 5px #02070b}
+button{font:inherit;color:inherit;text-shadow:inherit;touch-action:manipulation}
+h1,h2,p{margin:0}
+#top{display:grid;grid-template-rows:114px auto;gap:6px;min-width:0}
+#masthead{display:grid;grid-template-columns:76px minmax(0,1fr) auto 140px;align-items:center;gap:14px;min-width:0;padding:4px 12px 4px 18px;border:8px solid transparent;border-image:var(--frame) 24 / 8px stretch;background-image:linear-gradient(180deg,rgba(5,13,21,.70),rgba(7,15,23,.86)),var(--ground);background-repeat:no-repeat,repeat;background-size:auto,128px 128px;box-shadow:inset 0 0 0 2px var(--accent)}
+#dungeon-mark{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 3px 2px #02070b)}
+#dungeon-name{min-width:0;overflow:hidden;color:#fff9e8;font-size:clamp(28px,2.7vw,32px);line-height:.95;text-wrap:balance}
+#floor-number{padding:0 10px;color:#f1cf88;font-size:clamp(28px,2.5vw,32px);line-height:1;white-space:nowrap}
+#gear{width:140px;height:90px;display:grid;place-content:center;gap:5px;padding:4px;border:16px solid transparent;border-image:var(--frame) 24 / 16px stretch;background-image:linear-gradient(180deg,rgba(6,14,22,.65),rgba(8,14,20,.9)),var(--ground);background-repeat:no-repeat,repeat;background-size:auto,128px 128px;font-size:18px;letter-spacing:.04em}
+#gear:focus-visible,.close:focus-visible{outline:3px solid #ffe27a;outline-offset:3px}
+.menu-mark{display:grid;justify-items:center;gap:4px}
+.menu-mark i{display:block;width:27px;height:3px;background:#e0c27e;box-shadow:0 1px 0 #15202a}
+.gear-label{white-space:nowrap;line-height:1}
+#hud{display:grid;grid-template-columns:repeat(var(--challenge-count,1),minmax(0,1fr));gap:6px;min-width:0}
+#hud:empty{display:none}
+.challenge{display:grid;grid-template-rows:auto auto;align-content:center;gap:2px;min-width:0;min-height:106px;padding:6px 8px 6px 14px;border:12px solid transparent;border-image:var(--frame) 24 / 12px stretch;background-image:linear-gradient(180deg,rgba(5,13,21,.78),rgba(8,15,22,.92)),var(--ground);background-repeat:no-repeat,repeat;background-size:auto,128px 128px;position:relative}
+.challenge::before{content:"";position:absolute;inset:6px auto 6px 4px;width:4px;background:var(--accent);opacity:.82}
+.challenge-label{align-self:end;min-width:0;color:#fff9e9;font-size:28px;line-height:1.06;overflow-wrap:anywhere}
+.challenge-status{min-width:0;font-size:clamp(32px,2.25vw,36px);line-height:1;letter-spacing:.015em;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.challenge-status.ok{color:#8cff7a}
+#hud.n3 .challenge-label{font-size:25px}
+#hud.n3 .challenge-status{font-size:30px}
+.challenge-status.run{color:#ffe27a}
+.challenge-status.bad{color:#ff7a5a}
+#well{position:relative;min-width:0;min-height:0;overflow:hidden;border:8px solid transparent;border-image:var(--frame) 24 / 8px stretch;background:radial-gradient(ellipse at 50% 46%,#152739 0,#0c1926 57%,#08121c 100%);box-shadow:inset 0 0 0 2px var(--accent),0 4px 15px #02070b}
+#well::before{content:"";position:absolute;z-index:1;inset:3px;border:2px solid var(--accent);opacity:.34;pointer-events:none}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+#shade{display:none;position:fixed;inset:0;z-index:5;background:rgba(2,7,12,.8)}
+#shade.open{display:block}
+#opts{display:none;position:fixed;z-index:6;inset:50% auto auto 50%;transform:translate(-50%,-50%);width:min(900px,calc(100vw - 34px));max-height:calc(100% - 28px);overflow:auto;padding:16px 22px;border:22px solid transparent;border-image:var(--frame) 24 / 22px stretch;background-image:linear-gradient(180deg,rgba(5,13,21,.72),rgba(8,15,22,.9)),var(--ground);background-repeat:no-repeat,repeat;background-size:auto,128px 128px;box-shadow:inset 0 0 0 2px var(--accent)}
+#opts.open{display:block}
+.options-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:0 4px 10px;border-bottom:3px solid rgba(203,165,96,.68)}
+.options-head h2{font-size:clamp(25px,3vw,36px);line-height:1}
+.close{min-width:90px;min-height:90px;padding:0 14px;border:16px solid transparent;border-image:var(--frame) 24 / 16px stretch;background-image:linear-gradient(180deg,rgba(5,13,21,.65),rgba(8,15,22,.88)),var(--ground);background-repeat:no-repeat,repeat;background-size:auto,128px 128px;font-size:40px}
+#opts label{position:relative;display:flex;align-items:center;gap:12px;min-height:90px;padding:7px 12px 7px 48px;border-bottom:2px solid rgba(176,143,91,.42);touch-action:manipulation}
+#opts label[data-current]::before{content:"";position:absolute;left:9px;width:0;height:0;border-top:13px solid transparent;border-bottom:13px solid transparent;border-left:19px solid #f0c879;filter:drop-shadow(2px 2px 0 #121a21)}
+#opts input{position:absolute;width:1px;height:1px;opacity:0}
+#opts label:focus-within{outline:2px solid #e3bd72;outline-offset:-3px}
+.option-name{flex:1;min-width:0;font-size:clamp(28px,2.4vw,30px);line-height:1.08}
+.option-value{min-width:110px;text-align:right;color:#c4b99f;font-size:28px;white-space:nowrap}
+.option-value::after{content:"ВЫКЛ"}
+#opts input:checked~.option-value{color:#8cff7a}
+#opts input:checked~.option-value::after{content:"ВКЛ"}
+.section-label{padding:17px 8px 5px;color:#e5bd74;font-size:24px;letter-spacing:.09em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<header id="top">
+  <div id="masthead">
+    <img id="dungeon-mark" alt="" src="img/dungeon-model-0.png">
+    <h1 id="dungeon-name">Подземелье</h1>
+    <div id="floor-number">Этаж —</div>
+    <button id="gear" type="button" aria-label="Опции карты" aria-controls="opts" aria-expanded="false">
+      <span class="menu-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="gear-label">ОПЦИИ</span>
+    </button>
+  </div>
+  <section id="hud" aria-label="Испытания этажа"></section>
+</header>
+<main id="well" aria-label="Карта подземелья"><canvas id="c"></canvas></main>
+<div id="shade"></div>
+<div id="opts" role="dialog" aria-label="Параметры карты" aria-modal="true">
+  <div class="options-head"><h2>ПАРАМЕТРЫ КАРТЫ</h2><button class="close" type="button" aria-label="Закрыть">×</button></div>
+  <div class="section-label">Как в игре</div>
+  <label data-current><span class="option-name">Крупно вокруг героя</span><input type="checkbox" id="o_follow"><span class="option-value"></span></label>
+  <label><span class="option-name">Испытания этажа</span><input type="checkbox" id="o_challenges" checked><span class="option-value"></span></label>
+  <div class="section-label">Сверх игры</div>
+  <label><span class="option-name">Весь этаж без тумана</span><input type="checkbox" id="o_nofog"><span class="option-value"></span></label>
+  <label><span class="option-name">Все монстры</span><input type="checkbox" id="o_allmon"><span class="option-value"></span></label>
+  <label><span class="option-name">Отладка</span><input type="checkbox" id="o_debug"><span class="option-value"></span></label>
+</div>
+<!-- <script src="mock/dc2_mock.js"></script> -->
+<script>
+"use strict";
+const OPT_IDS=["o_follow","o_challenges","o_nofog","o_allmon","o_debug"];
+const opt={};
+function loadOpts(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem("dc2map_opts")||"{}")}catch(e){}
+  for(const id of OPT_IDS){
+    const el=document.getElementById(id);
+    if(id in saved)el.checked=!!saved[id];
+    opt[id]=el.checked;
+    el.addEventListener("change",()=>{
+      opt[id]=el.checked;
+      try{localStorage.setItem("dc2map_opts",JSON.stringify(opt))}catch(e){}
+      if(S)draw();
+    });
+  }
+}
+loadOpts();
+const optsBox=document.getElementById("opts"),shade=document.getElementById("shade"),gear=document.getElementById("gear");
+function setOptions(open){
+  optsBox.classList.toggle("open",open);
+  shade.classList.toggle("open",open);
+  gear.setAttribute("aria-expanded",String(open));
+}
+function toggleOpts(){setOptions(!optsBox.classList.contains("open"))}
+gear.addEventListener("click",toggleOpts);
+document.querySelector(".close").addEventListener("click",()=>setOptions(false));
+shade.addEventListener("click",()=>setOptions(false));
+addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&optsBox.classList.contains("open"))setOptions(false);
+  if((e.key==="o"||e.key==="O"||e.key==="щ"||e.key==="Щ")&&!e.ctrlKey&&!e.altKey&&!e.metaKey)toggleOpts();
+});
+function markOption(event){
+  const row=event.target.closest("label");
+  if(!row)return;
+  optsBox.querySelector("[data-current]")?.removeAttribute("data-current");
+  row.setAttribute("data-current","");
+}
+optsBox.addEventListener("click",markOption);
+optsBox.addEventListener("focusin",markOption);
+
+async function fetchState() {
+  if (window.DC2 && window.DC2.state) return JSON.parse(window.DC2.state());
+  const r = await fetch("/state", { cache: "no-store" });
+  return r.json();
+}
+
+const DUNGEON_NAMES=["Подземный канал","Лес Радужных Бабочек","Каньон Звёздного Света","Пещера Рёва Океана","Гора Гундор","Дворец Лунного Цветка","Зелмитовая шахта"];
+const DUNGEON_ACCENTS=["#94a17c","#b8ad75","#7ac6d2","#cbbb9e","#e6813c","#bb9bd2","#9ca780"];
+const DIRS=[[0,-1],[0,1],[1,0],[-1,0]];
+const COLORS={bg:"#0e1a26",room:"#31536b",roomEdge:"#9bc5d5",dim:"#263540",dimEdge:"#455966",hero:"#72ff88",mon:"#ff5757",box:"#ffbc56",geo:"#5be4ff",circle:"#d69aff",inC:"#71f58a",outC:"#ffdc64"};
+const cv=document.getElementById("c"),g=cv.getContext("2d");
+const well=document.getElementById("well"),hud=document.getElementById("hud");
+let S=null,dpr=1;
+function updateFloorTitle(f){
+  const id=f?.dungeon,name=DUNGEON_NAMES[id]||(id==null?"Подземелье":"Подземелье "+id);
+  const floor="Этаж "+(f?.floor==null?"—":Number(f.floor));
+  const nameEl=document.getElementById("dungeon-name"),floorEl=document.getElementById("floor-number");
+  if(nameEl.textContent!==name)nameEl.textContent=name;
+  if(floorEl.textContent!==floor)floorEl.textContent=floor;
+  const accentIndex=Number.isInteger(Number(id))&&Number(id)>=0&&Number(id)<7?Number(id):0;
+  const mark=document.getElementById("dungeon-mark");
+  if(mark.dataset.dungeon!==String(accentIndex)){
+    mark.src="img/dungeon-model-"+accentIndex+".png";
+    mark.dataset.dungeon=String(accentIndex);
+  }
+  document.documentElement.style.setProperty("--accent",DUNGEON_ACCENTS[accentIndex]);
+  document.documentElement.style.setProperty("--ground",'url("img/dng'+accentIndex+'_ground.png")');
+}
+function mmss(t60){
+  const t=Math.floor(Number(t60||0)/60);
+  return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+}
+function practiceText(t,p){
+  const W={1:"Только правая рука Макса",2:"Только ружьё Макса",3:"Только меч Моники",4:"Только магия Моники"};
+  const WB={1:0x7D,2:0x7B,3:0x77,4:0x6F};
+  if(t===1)return["Только предметы",0x7E];
+  if(t===2&&W[p])return[W[p],WB[p]];
+  if(t===3)return["Только райдпод",0x5F];
+  if(t===4)return["В облике монстра",0x3F];
+  if(t===5)return["Без лечения",0x80];
+  return null;
+}
+function updateChallenges(f){
+  if(!opt.o_challenges||!S?.ok||!S.grid||!f){
+    if(hud._signature!==""){hud.replaceChildren();hud._signature=""}
+    return;
+  }
+  const entries=[];
+  const add=(title,status,kind)=>{
+    entries.push({title,status,kind});
+  };
+  if(Number(f.limit)>0){
+    const passed=Number(f.elapsed)>Number(f.limit);
+    if(Number(f.flags)&0x10)add("Победить всех за "+mmss(f.limit),"✔ "+(Number(f.best)>0?"РЕКОРД "+mmss(f.best):"ПОЛУЧЕНО"),"ok");
+    else add("Победить всех за "+mmss(f.limit),(passed?"✘ ":"ИДЁТ ")+mmss(f.elapsed),passed?"bad":"run");
+  }
+  const pr=practiceText(Number(f.ptype),Number(f.pparam));
+  if(pr){
+    if(Number(f.flags)&0x08)add(pr[0],"✔ ПОЛУЧЕНО","ok");
+    else if(Number(f.mask)&pr[1])add(pr[0],"✘ НАРУШЕНО","bad");
+    else add(pr[0],"ИДЁТ","run");
+  }
+  // Optional forward-compatible extra rows (for example, the upcoming Sfida challenge).
+  if(Array.isArray(f.extraChallenges)){
+    for(const item of f.extraChallenges.slice(0,3-entries.length)){
+      if(!item||!item.title)continue;
+      const kind=item.state==="violated"?"bad":item.state==="complete"?"ok":"run";
+      const status=item.state==="violated"?"✘ НАРУШЕНО":item.state==="complete"?"✔ ПОЛУЧЕНО":"ИДЁТ";
+      add(String(item.title),status,kind);
+    }
+  }
+  hud.style.setProperty("--challenge-count",String(Math.max(1,entries.length)));hud.classList.toggle("n3",entries.length>=3);
+  const signature=JSON.stringify(entries);
+  if(hud._signature===signature)return;
+  hud._signature=signature;
+  hud.replaceChildren();
+  for(const entry of entries){
+    const card=document.createElement("div"),label=document.createElement("div"),status=document.createElement("div");
+    card.className="challenge";
+    label.className="challenge-label";label.textContent=entry.title;
+    status.className="challenge-status "+entry.kind;status.textContent=entry.status;
+    card.append(label,status);hud.append(card);
+  }
+}
+function resize(){
+  dpr=window.devicePixelRatio||1;
+  const box=well.getBoundingClientRect();
+  cv.width=Math.max(1,Math.round(box.width*dpr));
+  cv.height=Math.max(1,Math.round(box.height*dpr));
+  if(S)draw();
+}
+new ResizeObserver(resize).observe(well);
+resize();
+function draw(){
+  updateFloorTitle(S?.ok?S.floor:null);
+  updateChallenges(S?.floor||null);
+  const W=cv.width,H=cv.height;
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.scale(dpr,dpr);
+  const w0=W/dpr,h0=H/dpr;
+  if(!S||!S.ok||!S.grid){
+    g.textAlign="center";g.textBaseline="middle";
+    const title=!S?"Подключение к игре…":S.ok?"Вне подземелья":"Нет связи с игрой";
+    const subtitle=S&&!S.ok?"Запусти игру и включи PINE в эмуляторе":"";
+    const lines=subtitle?[title,subtitle]:[title];
+    const lineGap=subtitle?46:0,start=h0/2-(lines.length-1)*lineGap/2;
+    lines.forEach((line,i)=>{
+      g.font="bold "+(i===0?32:22)+"px Verdana,Arial,sans-serif";
+      g.lineWidth=6;g.lineJoin="round";g.strokeStyle="rgba(3,9,14,.96)";g.fillStyle=i===0?"#fff7e6":"#cfdeeb";
+      g.strokeText(line,w0/2,start+i*lineGap);g.fillText(line,w0/2,start+i*lineGap);
+    });
+    return;
+  }
+  const G=S.grid,cells=G.cells,gw=G.w,gh=G.h;
+  const top=12,availH=h0-top-12,availW=w0-24;
+  let bx0=gw,by0=gh,bx1=-1,by1=-1;
+  for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+    const q=cells[j*gw+i];
+    if(q&&q[0]!==0&&(q[4]||opt.o_nofog)){bx0=Math.min(bx0,i);by0=Math.min(by0,j);bx1=Math.max(bx1,i);by1=Math.max(by1,j)}
+  }
+  if(bx1<0){bx0=0;by0=0;bx1=gw-1;by1=gh-1}
+  bx0-=1;by0-=1;bx1+=2;by1+=2;
+  const bw=Math.max(8,bx1-bx0),bh=Math.max(8,by1-by0),mx=(bx0+bx1)/2,my=(by0+by1)/2;
+  let c=Math.min(availW/bw,availH/bh),ox=w0/2-mx*c,oy=top+availH/2-my*c;
+  const hero=S.hero,cellOf=(x,z)=>[Math.floor((x+.5*G.sx)/G.sx),Math.floor((z+.5*G.sz)/G.sz)];
+  if(opt.o_follow&&hero){
+    c*=2.2;
+    ox=w0/2-(hero.x+.5*G.sx)/G.sx*c;
+    oy=top+availH/2-(hero.z+.5*G.sz)/G.sz*c;
+  }
+  const cell=(i,j)=>i>=0&&i<gw&&j>=0&&j<gh?cells[j*gw+i]:null;
+  const shown0=cl=>!!cl&&cl[0]!==0&&(!!cl[4]||opt.o_nofog);
+  const heroCell=hero?cellOf(hero.x,hero.z):[-1,-1];
+  const linkedShown=(i,j)=>{
+    const cl=cell(i,j);
+    if(!shown0(cl))return false;
+    if(i===heroCell[0]&&j===heroCell[1])return true;
+    for(let b=0;b<4;b++)if((cl[2]>>b&1)&&shown0(cell(i+DIRS[b][0],j+DIRS[b][1])))return true;
+    return false;
+  };
+  const vismap=new Uint8Array(gw*gh);
+  for(let j=0;j<gh;j++)for(let i=0;i<gw;i++)vismap[j*gw+i]=linkedShown(i,j)?1:0;
+  const shown=(i,j)=>i>=0&&i<gw&&j>=0&&j<gh&&vismap[j*gw+i]===1;
+  const marg=cl=>c*(cl[0]===1?.30:.12),rects=[];
+  for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+    const cl=cell(i,j);if(!shown(i,j))continue;
+    const m=marg(cl),x0=ox+i*c,y0=oy+j*c,vis=!!cl[4];
+    rects.push([x0+m,y0+m,x0+c-m,y0+c-m,vis]);
+    const r=cell(i+1,j),d=cell(i,j+1);
+    if((cl[2]&4)&&shown(i+1,j)){
+      const mn=marg(r),m2=Math.max(m,mn);
+      rects.push([x0+c-m,y0+m2,x0+c+mn,y0+c-m2,vis&&!!r[4]]);
+    }
+    if((cl[2]&2)&&shown(i,j+1)){
+      const mn=marg(d),m2=Math.max(m,mn);
+      rects.push([x0+m2,y0+c-m,x0+c-m2,y0+c+mn,vis&&!!d[4]]);
+      const rd=cell(i+1,j+1);
+      if((cl[2]&4)&&shown(i+1,j)&&shown(i+1,j+1)&&(r[2]&2)&&(d[2]&4))rects.push([x0+c-m,y0+c-m,x0+c+m,y0+c+m,vis]);
+    }
+    if(!opt.o_nofog){
+      for(let b=0;b<4;b++){
+        const [dx,dy]=DIRS[b],nb=cell(i+dx,j+dy);
+        if((cl[3]>>b&1)&&nb&&nb[0]!==0&&!shown(i+dx,j+dy)){
+          const mn=Math.max(m,c*.32),cx=x0+c/2,cy=y0+c/2,L=c/2+c*.22;
+          if(dx){
+            const a=cx+dx*(c/2-m),bb=cx+dx*L;
+            rects.push([Math.min(a,bb),y0+mn,Math.max(a,bb),y0+c-mn,vis,dx>0?"R":"L"]);
+          }else{
+            const a=cy+dy*(c/2-m),bb=cy+dy*L;
+            rects.push([x0+mn,Math.min(a,bb),x0+c-mn,Math.max(a,bb),vis,dy>0?"D":"U"]);
+          }
+        }
+      }
+    }
+  }
+  const edge=Math.max(2,c*.045);
+  for(const vis of [false,true]){
+    g.fillStyle=vis?COLORS.roomEdge:COLORS.dimEdge;
+    for(const r of rects)if(r[4]===vis){
+      const open=r[5],x0=r[0]-(open==="L"?0:edge),x1=r[2]+(open==="R"?0:edge),y0=r[1]-(open==="U"?0:edge),y1=r[3]+(open==="D"?0:edge);
+      g.fillRect(x0,y0,x1-x0,y1-y0);
+    }
+  }
+  g.fillStyle=COLORS.bg;
+  for(const r of rects)g.fillRect(r[0],r[1],r[2]-r[0],r[3]-r[1]);
+  for(const r of rects){g.fillStyle=r[4]?COLORS.room:COLORS.dim;g.fillRect(r[0],r[1],r[2]-r[0],r[3]-r[1])}
+  for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+    const cl=cell(i,j);if(!shown(i,j))continue;
+    const p=cl[1],cx=ox+i*c+c/2,cy=oy+j*c+c/2,s=c*.26;
+    if((p>=32&&p<=39)){
+      g.fillStyle=p<=35?COLORS.inC:COLORS.outC;
+      let b=0;for(let k=0;k<4;k++)if(cl[2]>>k&1){b=k;break}
+      const [dx,dy]=DIRS[b],m=marg(cl),half=c/2-m,bw=Math.max(7,c*.12),bl=(c/2-m)*.9,ex=cx-dx*half,ey=cy-dy*half;
+      if(dx)g.fillRect(ex-bw/2,ey-bl,bw,bl*2);else g.fillRect(ex-bl,ey-bw/2,bl*2,bw);
+    }else if(opt.o_debug&&p>=40&&p<=51){
+      g.fillStyle="#ffc062";g.font="bold "+Math.max(12,c*.28)+"px Arial";g.textAlign="center";g.fillText(String(p),cx,cy+5);
+    }
+  }
+  const wp=(x,z)=>[ox+(x+.5*G.sx)/G.sx*c,oy+(z+.5*G.sz)/G.sz*c];
+  for(const o of S.objs||[]){
+    const [ci,cj]=cellOf(o.x,o.z);
+    if(!shown(ci,cj)&&!(o.k==="mon"&&opt.o_allmon))continue;
+    if(o.k==="mon"&&!o.seen&&!opt.o_allmon)continue;
+    const [px,py]=wp(o.x,o.z),r=Math.max(7,c*.105);
+    g.strokeStyle="#06111b";g.lineWidth=2.5;
+    if(o.k==="mon"){
+      g.fillStyle=COLORS.mon;g.beginPath();g.arc(px,py,r,0,Math.PI*2);g.fill();g.stroke();
+    }else if(o.k==="box"){
+      g.fillStyle=COLORS.box;g.beginPath();g.moveTo(px,py-r*1.35);g.lineTo(px+r*1.35,py);g.lineTo(px,py+r*1.35);g.lineTo(px-r*1.35,py);g.closePath();g.fill();g.stroke();
+    }else if(o.k==="geo"){
+      g.strokeStyle=COLORS.geo;g.lineWidth=3.5;g.beginPath();g.moveTo(px,py-r*1.7);g.lineTo(px+r,py);g.lineTo(px,py+r*1.7);g.lineTo(px-r,py);g.closePath();g.stroke();
+    }else if(o.k==="circle"){
+      g.strokeStyle=COLORS.circle;g.lineWidth=3.5;g.beginPath();g.arc(px,py,r*1.55,0,Math.PI*2);g.stroke();
+    }
+  }
+  if(hero){
+    const [hx,hy]=wp(hero.x,hero.z),r=Math.max(20,c*.38),a=Number(hero.a)||0,fx=Math.sin(a),fy=Math.cos(a),sx=-fy,sy=fx;
+    g.fillStyle=COLORS.hero;g.strokeStyle="#062211";g.lineWidth=3;
+    g.beginPath();
+    g.moveTo(hx+fx*r,hy+fy*r);
+    g.lineTo(hx-fx*r*.7+sx*r*.75,hy-fy*r*.7+sy*r*.75);
+    g.lineTo(hx-fx*r*.35,hy-fy*r*.35);
+    g.lineTo(hx-fx*r*.7-sx*r*.75,hy-fy*r*.7-sy*r*.75);
+    g.closePath();g.fill();g.stroke();
+  }
+  if(opt.o_debug){
+    const hc=hero?cell(...cellOf(hero.x,hero.z)):null;
+    g.font="bold 18px Verdana,Arial,sans-serif";g.textAlign="left";g.fillStyle="#a5bdce";
+    g.fillText("ЭТАЖ "+gw+"×"+gh+"  ОБЪЕКТЫ "+(S.objs||[]).length+"  ЧАСТЬ "+(hc?hc[1]:"—")+(S.floor?"  МАСКА "+Number(S.floor.mask).toString(16):""),14,h0-12);
+  }
+}
+async function loop(){
+  try{S=await fetchState()}catch(e){S={ok:false,err:"нет связи с dc2_map_server.py"}}
+  draw();
+  setTimeout(loop,100);
+}
+loop();
+</script>
+</body>
+</html>
+
+
+
+

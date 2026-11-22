@@ -225,7 +225,7 @@ function draw(){
   if(!S||!S.ok||!S.grid||noMap){
     g.textAlign="center";g.textBaseline="middle";
     const title=!S?"Подключение к игре…":noMap?"На этом этаже карты нет":S.ok?"Вне подземелья":"Нет связи с игрой";
-    const subtitle=S&&!S.ok?"Запусти игру и включи PINE в эмуляторе":"";
+    const subtitle=S&&!S.ok?"Запусти игру и включи PINE в эмуляторе":(S&&S.ok&&!S.grid&&opt.o_debug?"loop "+S.loop:"");
     const lines=subtitle?[title,subtitle]:[title];
     const lineGap=subtitle?46:0,start=h0/2-(lines.length-1)*lineGap/2;
     lines.forEach((line,i)=>{

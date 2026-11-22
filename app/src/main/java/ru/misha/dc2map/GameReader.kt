@@ -12,6 +12,7 @@ class GameReader(port: Int) {
     private var tick = 0
 
     companion object {
+        const val LOOPNO = 0x376FCC          // current main loop: 2 = dungeon (1 = town/edit, others = events/menus)
         const val MAINCHARA = 0x3772C8
         const val AUTOMAP = 0x1EA0480
         const val MONSTERMAN = 0x3772A8
@@ -109,6 +110,18 @@ class GameReader(port: Int) {
     }
 
     fun state(): String = try {
+        val loop = p.i32(LOOPNO)
+        if (loop != 2) {
+            grid = null
+            JSONObject().put("ok", true).put("loop", loop).put("grid", JSONObject.NULL).toString()
+        } else stateDungeon()
+    } catch (e: Exception) {
+        p.close()
+        grid = null
+        JSONObject().put("ok", false).put("err", "no PINE connection: ${e.javaClass.simpleName}").toString()
+    }
+
+    private fun stateDungeon(): String = run {
         if (tick % 10 == 0 || grid == null) grid = readGrid()
         tick++
         val g = grid
@@ -119,11 +132,7 @@ class GameReader(port: Int) {
             val hero = if (ch != 0) JSONObject().put("x", p.f32(ch + 16).toDouble())
                 .put("z", p.f32(ch + 24).toDouble()).put("a", p.f32(ch + 36).toDouble()) else JSONObject.NULL
             JSONObject().put("ok", true).put("grid", g).put("hero", hero)
-                .put("objs", readObjects()).put("floor", readFloor() ?: JSONObject.NULL).toString()
+                .put("objs", readObjects()).put("floor", readFloor() ?: JSONObject.NULL).put("loop", 2).toString()
         }
-    } catch (e: Exception) {
-        p.close()
-        grid = null
-        JSONObject().put("ok", false).put("err", "no PINE connection: ${e.javaClass.simpleName}").toString()
     }
 }

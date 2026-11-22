@@ -94,7 +94,10 @@ class GameReader(port: Int) {
             val e = glid + 112 * k
             if ((p.u32(e) and 0xFFFF) == 1L && (p.u32(e + 40) and 0xFF) == floor) { ent = e; break }
         }
-        if (ent == 0) return null
+        // no regular floor record = special floor (boss): the game keeps no map there
+        if (ent == 0) return JSONObject().put("dungeon", d).put("floor", floor).put("special", true)
+            .put("best", 0).put("flags", 0).put("limit", 0).put("ptype", 0).put("pparam", 0)
+            .put("elapsed", 0).put("mask", 0).put("allk", 0)
         val w = p.u32(ent + 56)
         val ptype = ((w shr 16) and 0xFF).toInt().toByte().toInt()   // signed byte at +58
         val flags = (p.u32(fs + 14) shr (8 * ((fs + 14) and 3))) and 0xFFFF

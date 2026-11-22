@@ -221,10 +221,11 @@ function draw(){
   const W=cv.width,H=cv.height;
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.scale(dpr,dpr);
   const w0=W/dpr,h0=H/dpr;
-  if(!S||!S.ok||!S.grid){
+  const noMap=S&&S.ok&&S.grid&&S.floor&&S.floor.special&&!opt.o_debug;
+  if(!S||!S.ok||!S.grid||noMap){
     g.textAlign="center";g.textBaseline="middle";
-    const title=!S?"Подключение к игре…":S.ok?"Вне подземелья":"Нет связи с игрой";
-    const subtitle=S&&!S.ok?"Запусти игру и включи PINE в эмуляторе":"";
+    const title=!S?"Подключение к игре…":noMap?"Карты нет":S.ok?"Вне подземелья":"Нет связи с игрой";
+    const subtitle=S&&!S.ok?"Запусти игру и включи PINE в эмуляторе":noMap?"На этом этаже игра не ведёт карту":"";
     const lines=subtitle?[title,subtitle]:[title];
     const lineGap=subtitle?46:0,start=h0/2-(lines.length-1)*lineGap/2;
     lines.forEach((line,i)=>{

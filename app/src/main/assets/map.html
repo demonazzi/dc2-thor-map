@@ -323,7 +323,7 @@ function draw(){
   const wp=(x,z)=>[ox+(x+.5*G.sx)/G.sx*c,oy+(z+.5*G.sz)/G.sz*c];
   for(const o of S.objs||[]){
     const [ci,cj]=cellOf(o.x,o.z);
-    if(!shown(ci,cj)&&!(o.k==="mon"&&opt.o_allmon))continue;
+    if(!shown(ci,cj)&&!(o.k==="mon"&&(opt.o_allmon||o.seen)))continue;   // game draws visible monsters even on unexplored cells
     if(o.k==="mon"&&!o.seen&&!opt.o_allmon)continue;
     const [px,py]=wp(o.x,o.z),r=Math.max(7,c*.105);
     g.strokeStyle="#06111b";g.lineWidth=2.5;
